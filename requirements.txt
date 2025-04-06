@@ -1,5 +1,4 @@
-matplotlib
-numpy
+seaborn
 requests
-pandas
 streamlit
+scikit-learn
