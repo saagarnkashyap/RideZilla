@@ -204,58 +204,55 @@ plt.tight_layout()
 st.pyplot(fig4)
 
 
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Sample Data (you will load your actual data here)
+# Sample Data (replace with actual)
 # df = pd.read_csv("your_data.csv")
 
-# --- Monthly Summary & Suggestions ---
 st.title("Monthly Recap and Suggestions")
 
-# Ensure 'month' column exists and is in proper format
-df['start_date'] = pd.to_datetime(df['start_date'])  # Ensure start_date is datetime
-df['month'] = df['start_date'].dt.strftime('%B %Y')
+# Ensure 'start_date' is datetime
+df['start_date'] = pd.to_datetime(df['start_date'])
+
+# Create a proper 'month_start' column for grouping and sorting
+df['month_start'] = df['start_date'].values.astype('datetime64[M]')  # First day of the month
 
 # Calculate monthly stats
-monthly_stats = df.groupby('month')[['distance_km', 'average_speed_kmh', 'moving_time_min']].mean().round(2)
+monthly_stats = df.groupby('month_start')[['distance_km', 'average_speed_kmh', 'moving_time_min']].mean().round(2)
 
-# Check that at least 2 months of data are present
+# Continue only if at least two months of data
 if len(monthly_stats) >= 2:
+    # Sort by actual datetime
+    monthly_stats = monthly_stats.sort_index()
+
+    # Get last and second last month
     this_month, last_month = monthly_stats.index[-1], monthly_stats.index[-2]
 
+    # Format nicely for display
+    this_month_str = this_month.strftime('%B %Y')
+    last_month_str = last_month.strftime('%B %Y')
+
+    # Prepare Recap
     summary = f"""
-    **Monthly Recap — {this_month}**
-    
-    Compared to {last_month}:
+    **Monthly Recap — {this_month_str}**
+
+    Compared to {last_month_str}:
     - Distance: {monthly_stats.loc[this_month, 'distance_km']} km vs {monthly_stats.loc[last_month, 'distance_km']} km
     - Avg Speed: {monthly_stats.loc[this_month, 'average_speed_kmh']} km/h vs {monthly_stats.loc[last_month, 'average_speed_kmh']} km/h
     - Avg Duration: {monthly_stats.loc[this_month, 'moving_time_min']} min vs {monthly_stats.loc[last_month, 'moving_time_min']} min
-
-    **Suggestions**:
     """
-    
-    # Suggestions Logic
-    if monthly_stats.loc[this_month, 'average_speed_kmh'] < monthly_stats.loc[last_month, 'average_speed_kmh']:
-        summary += "- Try interval training to boost pacing.\n"
-    else:
-        summary += "- Keep up the strong pacing! Consider longer steady rides.\n"
 
-    if monthly_stats.loc[this_month, 'distance_km'] < monthly_stats.loc[last_month, 'distance_km']:
-        summary += "- Increase weekly ride lengths to build endurance.\n"
+    # Add suggestions (placeholder logic, can be improved)
+    if monthly_stats.loc[this_month, 'distance_km'] > monthly_stats.loc[last_month, 'distance_km']:
+        summary += "\n\n**Suggestions**:\n- Keep up the strong pacing! Consider longer steady rides."
     else:
-        summary += "- Excellent consistency in distance. Maintain this streak!\n"
-
-    if monthly_stats.loc[this_month, 'moving_time_min'] < monthly_stats.loc[last_month, 'moving_time_min']:
-        summary += "- Ride a bit longer — shorter durations might be limiting progress.\n"
-    else:
-        summary += "- Great ride duration! Keep pushing boundaries.\n"
+        summary += "\n\n**Suggestions**:\n- Try increasing ride frequency or distance gradually. You're capable of more!"
 
     st.markdown(summary)
 else:
-    st.write("Not enough monthly data to compare this month with the previous month.")
+    st.warning("Not enough data to generate a monthly comparison. Try uploading more ride data.")
 
 # --- Underperformance Detection ---
 st.title("Underperformance Detection")
