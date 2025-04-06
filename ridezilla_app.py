@@ -95,10 +95,7 @@ for activity in activities:
         'type': activity['type'],
         'start_date': activity['start_date_local'],
         'average_speed_kmh': round(activity['average_speed'] * 3.6, 2),
-        'max_speed_kmh': round(activity['max_speed'] * 3.6, 2),
-        'has_heartrate': activity.get('has_heartrate', False),
-        'average_heartrate': activity.get('average_heartrate'),
-        'max_heartrate': activity.get('max_heartrate'),
+        'max_speed_kmh': round(activity['max_speed'] * 3.6, 2)
     })
 
 df = pd.DataFrame(data)
